@@ -1,55 +1,56 @@
-var swarm = require('discovery-swarm')
-var gossip = require('secure-gossip')
-var EventEmitter = require('events')
-var util = require('util')
+'use strict';
 
-util.inherits(Pubsub, EventEmitter)
+const   swarm = require('discovery-swarm'),
+        gossip = require('secure-gossip'),
+        EventEmitter = require('events'),
+        util = require('util');
 
-function Pubsub (topic, opts) {
-  if (!(this instanceof Pubsub)) { return new Pubsub(topic, opts) }
+const GOSSIP = Symbol('gossip')
+const SWARM = Symbol('swarm')
 
-  if (!topic) { throw new Error('a topic must be set') }
-  if (typeof topic !== 'string') { throw new Error('topic must be a string') }
+class Pubsub extends EventEmitter {
+    constructor(topic, opts) {
+        super()
 
-  opts = opts || {}
-  opts.port = opts.port || 0
+        if (!topic) { throw new Error('a topic must be set') }
+        if (typeof topic !== 'string') { throw new Error('topic must be a string') }
 
-  EventEmitter.call(this)
+        opts = opts || {}
+        opts.port = opts.port || 0
 
-  this.gossip = gossip()
+        this[GOSSIP] = gossip()
 
-  this.id = this.gossip.keys.public
+        this.id = this[GOSSIP].keys.public
 
-  this.swarm = swarm()
+        this[SWARM] = swarm()
 
-  this.swarm.join(topic)
+        this[SWARM].join(topic)
 
-  var firstConn = false
+        let firstConn = false
 
-  var self = this
-  this.swarm.on('connection', function (connection) {
-    console.log('found + connected to peer')
-    var g = self.gossip.createPeerStream()
-    connection.pipe(g).pipe(connection)
+        this[SWARM].on('connection', (connection) => {
+            let g = this[GOSSIP].createPeerStream()
+            connection.pipe(g).pipe(connection)
 
-    if (!firstConn && this.connections.length === 1) {
-      firstConn = true
-      self.emit('connected')
+            if (!firstConn && this[SWARM].connections.length === 1) {
+                firstConn = true
+                this.emit('connected')
+            }
+        })
+
+        // TODO: fire event when you have no peers left
+        // ...
+
+        this[SWARM].listen(opts.port)
+
+        this[GOSSIP].on('message', (msg) => {
+            this.emit('message', msg)
+        })
     }
-  })
 
-  // TODO: fire event when you have no peers left
-  // ...
-
-  this.swarm.listen(opts.port)
-
-  this.gossip.on('message', function (msg) {
-    self.emit('message', msg)
-  })
-
-  this.publish = function (msg) {
-    self.gossip.publish(msg)
-  }
+    publish(msg) {    
+        this[GOSSIP].publish(msg)
+    }
 }
 
 module.exports = Pubsub

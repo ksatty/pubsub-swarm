@@ -1,6 +1,6 @@
-var pubsub = require('./index')
+var Pubsub = require('./index')
 
-var swarm = pubsub('foobar')
+var swarm = new Pubsub('foobar')
 
 swarm.on('message', function (msg) {
   console.log('message', msg)

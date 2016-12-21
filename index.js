@@ -21,6 +21,7 @@ class Pubsub extends EventEmitter {
         this[GOSSIP] = gossip()
 
         this.id = this[GOSSIP].keys.public
+        this.port = opts.port
 
         this[SWARM] = swarm()
 
@@ -34,7 +35,7 @@ class Pubsub extends EventEmitter {
 
             if (!firstConn && this[SWARM].connections.length === 1) {
                 firstConn = true
-                this.emit('connected')
+                this.emit('connected', connection)
             }
         })
 

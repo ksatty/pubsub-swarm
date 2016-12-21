@@ -1,7 +1,7 @@
 {
   "name": "pubsub-swarm",
   "description": "exchange messages with other peers interested in a topic",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "repository": {
     "url": "git://github.com/noffle/pubsub-swarm.git"
   },
@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "debug": "^2.2.0",
-    "discovery-swarm": "^3.1.2",
-    "secure-gossip": "^0.2.2"
+    "discovery-swarm": "^4.1.1",
+    "secure-gossip": "^0.3.1"
   },
   "devDependencies": {
     "tape": "*"
